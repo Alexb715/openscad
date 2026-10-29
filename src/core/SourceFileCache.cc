@@ -7,10 +7,12 @@
 #include <cstdio>
 #include <ctime>
 #include <fstream>
+#include <functional>
 #include <string>
 
 #include "core/SourceFile.h"
 #include "core/StatCache.h"
+#include "Feature.h"
 #include "openscad.h"
 #include "utils/printutils.h"
 
@@ -51,8 +53,12 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
   // If file isn't there, just return and let the cache retain the old file
   if (!valid) return 0;
 
-  // If the file is present, we'll always cache some result
-  std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
+  // If the file is present, we'll always cache some result. The library text is parsed with
+  // the -D commands appended and its meaning depends on the enabled experimental features, so
+  // both are part of the id: a cached library is reparsed when either of them changes.
+  std::string cache_id =
+    str(boost::format("%x.%x.%x") % st.st_mtime % st.st_size %
+        std::hash<std::string>{}(commandline_commands + '\0' + Feature::features()));
 
   cache_entry& cacheEntry = this->entries[filename];
   // Initialize entry, if new
