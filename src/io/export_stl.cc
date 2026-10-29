@@ -297,10 +297,9 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   } else {
     // ASCII mode: Write directly to the output stream
-    setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
+    // Numbers are formatted with double-conversion (toString), independent of the C locale.
     output << "solid OpenSCAD_Model\n";
     append_stl(geom, output, binary);
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, "");  // Restore default locale
   }
 }
