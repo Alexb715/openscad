@@ -172,7 +172,7 @@ include[ \t\r\n]*"<"    { BEGIN(cond_include); filepath = filename = ""; LOCATIO
 }
 
 
-use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
+use[ \t\r\n]*"<"        { BEGIN(cond_use); filename.clear(); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
 [\n\r]                  {
                             LOCATION_ADD_LINES(parserlloc, yyleng);
@@ -479,4 +479,6 @@ void lexerdestroy()
     openfilenames.clear();
     filename_stack.clear();
     loc_stack.clear();
+    filename.clear();
+    filepath.clear();
 }
