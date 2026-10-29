@@ -49,6 +49,7 @@
 #include "core/function.h"
 #include "io/fileutils.h"
 #include "io/import.h"
+#include "utils/EvaluationInterrupt.h"
 #include "utils/boost-utils.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -698,6 +699,7 @@ static VectorType search(const str_utf8_wrapper& find, const str_utf8_wrapper& t
   size_t findThisSize = find.get_utf8_strlen();
   size_t searchTableSize = table.get_utf8_strlen();
   for (size_t i = 0; i < findThisSize; ++i) {
+    check_evaluation_interrupt();
     unsigned int matchCount = 0;
     VectorType resultvec(session);
     const auto ft = find[i];
@@ -732,6 +734,7 @@ static VectorType search(const str_utf8_wrapper& find, const VectorType& table,
   unsigned int findThisSize = find.get_utf8_strlen();
   unsigned int searchTableSize = table.size();
   for (size_t i = 0; i < findThisSize; ++i) {
+    check_evaluation_interrupt();
     unsigned int matchCount = 0;
     VectorType resultvec(session);
     const auto ft = find[i];
@@ -789,6 +792,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
     unsigned int matchCount = 0;
     size_t j = 0;
     for (const auto& search_element : searchTable.toVector()) {
+      if ((j & 0xFFF) == 0) check_evaluation_interrupt();
       if ((index_col_num == 0 && (findThis == search_element).toBool()) ||
           (index_col_num < search_element.toVector().size() &&
            (findThis == search_element.toVector()[index_col_num]).toBool())) {
@@ -809,6 +813,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
   } else if (findThis.type() == Value::Type::VECTOR) {
     const auto& findVec = findThis.toVector();
     for (const auto& find_value : findVec) {
+      check_evaluation_interrupt();
       unsigned int matchCount = 0;
       VectorType resultvec(arguments.session());
 

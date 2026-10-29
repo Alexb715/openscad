@@ -53,6 +53,7 @@
 #include "utils/boost-utils.h"
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
+#include "utils/EvaluationInterrupt.h"
 #include "utils/printutils.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
@@ -597,6 +598,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
     print_err(name.c_str(), loc, context);
     throw RecursionException::create("function", name, this->loc);
   }
+  check_evaluation_interrupt();
 
   // Repeatedly simplify expr until it reduces to either a tail call,
   // or an expression that cannot be simplified in-place. If the latter,
@@ -608,6 +610,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   ContextHandle<Context> expression_context{Context::create<Context>(context)};
   const Expression *expression = this;
   while (true) {
+    check_evaluation_interrupt();
     try {
       auto result = simplify_function_body(expression, *expression_context);
       if (Value *value = std::get_if<Value>(&result)) {
@@ -879,6 +882,7 @@ static void doForEach(const AssignmentList& assignments, const Location& locatio
                       size_t assignment_index, const std::shared_ptr<const Context>& context,
                       const std::function<void(size_t)> *pReserve = nullptr)
 {
+  check_evaluation_interrupt();
   if (assignment_index >= assignments.size()) {
     operation(context);
     return;
@@ -981,6 +985,7 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 
   unsigned int counter = 0;
   while (this->cond->evaluate(*currentContext).toBool()) {
+    check_evaluation_interrupt();
     output.emplace_back(this->expr->evaluate(*currentContext));
 
     if (counter++ == 1000000) {

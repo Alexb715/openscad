@@ -50,6 +50,7 @@
 #include "utils/StackCheck.h"
 #include "utils/boost-utils.h"
 #include "utils/exceptions.h"
+#include "utils/EvaluationInterrupt.h"
 #include "utils/printutils.h"
 
 namespace fs = std::filesystem;
@@ -824,6 +825,7 @@ Value VectorType::operator==(const VectorType& v) const
   size_t i = 0;
   auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
   for (; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+    check_evaluation_interrupt();
     Value temp = *first1 == *first2;
     if (temp.isUndefined()) {
       temp.toUndef().append(STR("in vector comparison at index ", i));
@@ -847,6 +849,7 @@ Value VectorType::operator<(const VectorType& v) const
   auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
   size_t i = 0;
   for (; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+    check_evaluation_interrupt();
     Value temp = *first1 < *first2;
     if (temp.isUndefined()) {
       temp.toUndef().append(STR("in vector comparison at index ", i));
@@ -1081,6 +1084,7 @@ public:
     VectorType sum(op1.evaluation_session());
     sum.reserve(op1.size());
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
+      check_evaluation_interrupt();
       sum.emplace_back(op1[i] - op2[i]);
     }
     return std::move(sum);
@@ -1109,6 +1113,7 @@ Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
   VectorType dstv(matrixvec.evaluation_session());
   dstv.reserve(matrixvec.size());
   for (size_t i = 0; i < matrixvec.size(); ++i) {
+    check_evaluation_interrupt();
     if (matrixvec[i].type() != Value::Type::VECTOR ||
         matrixvec[i].toVector().size() != vectorvec.size()) {
       return Value::undef(STR("Matrix must be rectangular. Problem at row ", i));

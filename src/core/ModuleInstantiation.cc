@@ -11,6 +11,7 @@
 #include "core/module.h"
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
+#include "utils/EvaluationInterrupt.h"
 #include "utils/printutils.h"
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
@@ -73,6 +74,7 @@ static void NOINLINE print_trace(EvaluationException& e, const ModuleInstantiati
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   const std::shared_ptr<const Context>& context) const
 {
+  check_evaluation_interrupt();
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {
     return nullptr;

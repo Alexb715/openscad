@@ -44,6 +44,7 @@
 #include "utils/StackCheck.h"
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
+#include "utils/EvaluationInterrupt.h"
 #include "utils/printutils.h"
 
 std::vector<std::string> StaticModuleNameStack::stack;
@@ -96,6 +97,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
     throw RecursionException::create("module", inst->name(), loc);
     return nullptr;
   }
+  check_evaluation_interrupt();
 
   StaticModuleNameStack name{inst->name()};  // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
